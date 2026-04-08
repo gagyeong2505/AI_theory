@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 자동화 특강 이론</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Google Fonts: Noto Sans KR -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+    <!-- Tailwind Configuration -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Noto Sans KR"', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: { // 발랄한 오렌지 톤
+                            50: '#fff7ed',
+                            100: '#ffedd5',
+                            200: '#fed7aa',
+                            300: '#fdba74',
+                            400: '#fb923c',
+                            500: '#f97316', // Main Orange
+                            600: '#ea580c',
+                            700: '#c2410c',
+                            800: '#9a3412',
+                            900: '#7c2d12',
+                        },
+                        neutral: { // 따뜻한 느낌의 웜그레이 톤 (기존 차가운 slate 대체)
+                            50: '#fafaf9',
+                            100: '#f5f5f4',
+                            200: '#e7e5e4',
+                            300: '#d6d3d1',
+                            400: '#a8a29e',
+                            500: '#78716c',
+                            600: '#57534e',
+                            700: '#44403c',
+                            800: '#292524',
+                            900: '#1c1917',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Custom Scrollbar - 웜그레이 톤 */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f5f5f4; }
+        ::-webkit-scrollbar-thumb { background: #d6d3d1; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #a8a29e; }
+
+        /* Chart Container Styling - Mandatory */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container { height: 350px; }
+        }
+
+        /* Interactive Elements */
+        .fukatsu-block {
+            transition: all 0.2s ease;
+            cursor: pointer;
+            border-left: 4px solid transparent;
+        }
+        .fukatsu-block:hover {
+            background-color: #fff7ed;
+            border-left-color: #f97316;
+            transform: translateX(4px);
+        }
+        .fukatsu-block.active {
+            background-color: #fff7ed;
+            border-left-color: #f97316;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Toggle Switch CSS - 오렌지 톤 반영 */
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #f97316;
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #f97316;
+        }
+        .toggle-checkbox {
+            right: 0;
+            z-index: 1;
+            border-color: #e7e5e4;
+            transition: all 0.3s;
+        }
+        .toggle-label {
+            width: 3rem;
+            height: 1.5rem;
+            background-color: #d6d3d1;
+            border-radius: 9999px;
+            transition: all 0.3s;
+        }
+
+        /* Fade Animation */
+        .fade-in { animation: fadeIn 0.3s ease-in forwards; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.4s ease-out; }
+    </style>
+</head>
+<body class="bg-primary-50 text-neutral-800 font-sans antialiased min-h-screen">
+
+    <!-- Chosen Palette: Bright Orange (primary) with Warm Grey (neutral) to create a cheerful, energetic, yet professional atmosphere. -->
+    
+    <!-- Application Structure Plan: 
+         - Layout: Top Navigation Tabs + Dynamic Content Area.
+         - Flow: 
+           1. Core AI (Charts showing the difference good prompting makes).
+           2. Fukatsu Framework (Interactive block explorer to learn the structure).
+           3. Roles & Constraints (Interactive toggle simulator showing Before/After text).
+         - Update: Removed all emojis/icons for a cleaner, typography-driven look. Changed color scheme to vibrant orange.
+    -->
+
+    <!-- Visualization & Content Choices:
+         - Goal 1 (Compare Quality): Radar Chart (Chart.js). Updated colors to orange vs warm-grey.
+         - Goal 2 (Structure Breakdown): Doughnut Chart (Chart.js). Updated colors to an orange gradient.
+         - Goal 3 (Learn Framework): Interactive HTML CSS Grid. 
+         - Goal 4 (Demonstrate Impact): Interactive Toggle & Text Swap (Vanilla JS).
+         - CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. NO emojis used.
+    -->
+
+    <!-- Header -->
+    <header class="bg-primary-500 text-white shadow-md">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <h1 class="text-3xl font-bold tracking-tight mb-2">프롬프트 엔지니어링 마스터 클래스</h1>
+            <p class="text-primary-100 text-sm font-medium">AI 에이전트 OA 실무 - 1단계 심화 학습</p>
+        </div>
+        
+        <!-- Tab Navigation -->
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <nav class="flex space-x-2" aria-label="Tabs">
+                <button onclick="switchTab('tab-intro')" id="btn-tab-intro" class="tab-btn px-6 py-3 text-sm font-bold rounded-t-xl bg-white text-primary-600 border-b-2 border-white transition-colors">
+                    AI & 프롬프트 이해
+                </button>
+                <button onclick="switchTab('tab-fukatsu')" id="btn-tab-fukatsu" class="tab-btn px-6 py-3 text-sm font-bold rounded-t-xl bg-primary-600 text-primary-100 hover:bg-primary-400 border-b-2 border-transparent transition-colors">
+                    후카츠 프롬프트
+                </button>
+                <button onclick="switchTab('tab-constraints')" id="btn-tab-constraints" class="tab-btn px-6 py-3 text-sm font-bold rounded-t-xl bg-primary-600 text-primary-100 hover:bg-primary-400 border-b-2 border-transparent transition-colors">
+                    역할 및 제약조건
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <!-- TAB 1: AI & 프롬프트 이해 -->
+        <section id="tab-intro" class="tab-content active">
+            <div class="bg-white rounded-2xl shadow-sm border border-neutral-200 p-6 md:p-10 mb-8">
+                <h2 class="text-2xl font-bold text-neutral-900 mb-4">왜 프롬프팅(Prompting)이 중요한가?</h2>
+                <p class="text-neutral-600 leading-relaxed text-lg mb-8">
+                    AI는 마법 지팡이가 아니라 <strong>뛰어난 신입사원</strong>과 같습니다. 모호하게 지시하면 일반적이고 쓸모없는 결과물을 내놓지만, 
+                    명확한 맥락과 규칙을 주면 전문가 수준의 결과물을 생성합니다. 이 '지시하는 기술'이 바로 프롬프트 엔지니어링입니다.
+                </p>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-4">
+                    <!-- Radar Chart: Impact of Good Prompting -->
+                    <div class="bg-neutral-50 p-8 rounded-2xl border border-neutral-100 flex flex-col items-center">
+                        <h3 class="text-lg font-bold text-neutral-800 mb-2">프롬프트 최적화 전/후 비교</h3>
+                        <p class="text-sm text-neutral-500 mb-6 text-center">동일한 AI 모델에서 지시 방식에 따른 품질 변화</p>
+                        <div class="chart-container w-full flex-grow">
+                            <canvas id="radarChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Doughnut Chart: Components of a Prompt -->
+                    <div class="bg-neutral-50 p-8 rounded-2xl border border-neutral-100 flex flex-col items-center">
+                        <h3 class="text-lg font-bold text-neutral-800 mb-2">고품질 프롬프트의 구성 비율</h3>
+                        <p class="text-sm text-neutral-500 mb-6 text-center">원하는 결과물을 얻기 위해 투자해야 할 지시의 비중</p>
+                        <div class="chart-container w-full flex-grow">
+                            <canvas id="doughnutChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 2: 후카츠 프롬프트 프레임워크 -->
+        <section id="tab-fukatsu" class="tab-content">
+            <div class="bg-white rounded-2xl shadow-sm border border-neutral-200 p-6 md:p-10">
+                <div class="mb-10">
+                    <h2 class="text-2xl font-bold text-neutral-900 mb-3">후카츠 프롬프트 (Fukatsu Prompt)</h2>
+                    <p class="text-neutral-600 text-lg">
+                        일본의 후카츠 타카유키가 고안한 프레임워크로, AI가 혼동하지 않도록 <strong>명령, 조건, 입력, 출력</strong>을 
+                        마크다운 기호(#)로 명확히 블록화하여 지시하는 가장 강력한 기초 템플릿입니다. 좌측의 각 블록을 클릭하여 세부 작성법을 확인하세요.
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <!-- Interactive Template Explorer -->
+                    <div class="bg-neutral-800 rounded-2xl p-8 font-mono text-sm text-neutral-300 shadow-inner">
+                        <div class="mb-6 text-primary-400 font-bold">// 아래의 구조 블록을 클릭해보세요.</div>
+                        
+                        <div class="space-y-4">
+                            <div class="fukatsu-block active bg-neutral-700 p-4 rounded-xl" onclick="showFukatsuDetail('command', this)">
+                                <span class="text-primary-400 font-bold text-base">#명령문:</span><br>
+                                당신은 [역할]입니다.<br>
+                                제공된 [입력문]을 바탕으로 [출력문] 형식에 맞춰 작성해주세요.
+                            </div>
+                            
+                            <div class="fukatsu-block bg-neutral-700 p-4 rounded-xl" onclick="showFukatsuDetail('constraint', this)">
+                                <span class="text-primary-400 font-bold text-base">#제약조건:</span><br>
+                                - 조건 1: 어조는 정중하게<br>
+                                - 조건 2: 300자 이내로 요약<br>
+                                - 조건 3: 중요 키워드는 굵게 표시
+                            </div>
+                            
+                            <div class="fukatsu-block bg-neutral-700 p-4 rounded-xl" onclick="showFukatsuDetail('input', this)">
+                                <span class="text-primary-400 font-bold text-base">#입력문:</span><br>
+                                [여기에 분석하거나 변환할 원본 데이터나 텍스트를 입력합니다.]
+                            </div>
+                            
+                            <div class="fukatsu-block bg-neutral-700 p-4 rounded-xl" onclick="showFukatsuDetail('output', this)">
+                                <span class="text-primary-400 font-bold text-base">#출력문:</span><br>
+                                1. 요약: <br>
+                                2. 핵심 인사이트: <br>
+                                3. 향후 계획: 
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Detail Info Panel -->
+                    <div id="fukatsu-detail-panel" class="bg-primary-50 rounded-2xl p-8 border border-primary-100 flex flex-col justify-center">
+                        <h3 class="text-2xl font-bold text-primary-700 mb-4">#명령문 (Command)</h3>
+                        <p class="text-neutral-700 leading-relaxed mb-6 text-lg">
+                            AI가 수행해야 할 핵심 목표와 역할을 부여하는 섹션입니다. 
+                            AI에게 <strong>"너는 누구고, 무엇을 해야 한다"</strong>를 가장 먼저 각인시킵니다.
+                        </p>
+                        <div class="bg-white p-5 rounded-xl border border-primary-200 shadow-sm">
+                            <span class="text-xs font-bold text-primary-500 uppercase tracking-wider block mb-2">실무 적용 예시</span>
+                            <span class="text-neutral-800 font-medium">"당신은 10년 차 B2B 데이터 분석가입니다. 다음 첨부된 매출 데이터를 분석하여 핵심 원인을 도출하세요."</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 3: 역할 및 제약조건 -->
+        <section id="tab-constraints" class="tab-content">
+            <div class="bg-white rounded-2xl shadow-sm border border-neutral-200 p-6 md:p-10">
+                <div class="mb-10 flex justify-between items-end flex-wrap gap-6">
+                    <div class="max-w-2xl">
+                        <h2 class="text-2xl font-bold text-neutral-900 mb-3">역할 부여 및 제약조건 시뮬레이터</h2>
+                        <p class="text-neutral-600 text-lg">
+                            동일한 질문이라도 AI에게 <strong>어떤 페르소나(역할)</strong>를 주고 <strong>어떤 제약(규칙)</strong>을 거느냐에 따라 
+                            출력물의 퀄리티는 크게 달라집니다. 우측의 스위치를 켜서 차이를 직접 확인하세요.
+                        </p>
+                    </div>
+                    
+                    <!-- Interactive Toggle -->
+                    <div class="flex items-center gap-4 bg-neutral-50 p-4 rounded-xl border border-neutral-200">
+                        <span class="text-sm font-bold text-neutral-500" id="toggle-status-text">일반 프롬프트</span>
+                        <div class="relative inline-block w-14 align-middle select-none transition duration-200 ease-in">
+                            <input type="checkbox" name="toggle" id="prompt-toggle" class="toggle-checkbox absolute block w-7 h-7 rounded-full bg-white border-4 appearance-none cursor-pointer"/>
+                            <label for="prompt-toggle" class="toggle-label block overflow-hidden h-7 rounded-full bg-neutral-300 cursor-pointer" style="width: 3.5rem; height: 1.75rem;"></label>
+                        </div>
+                        <span class="text-sm font-bold text-primary-600">최적화 적용</span>
+                    </div>
+                </div>
+
+                <!-- Simulation Boxes -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    
+                    <!-- User Prompt Box -->
+                    <div class="flex flex-col h-full shadow-sm rounded-xl overflow-hidden border border-neutral-200">
+                        <div class="bg-neutral-800 text-white p-4 font-bold text-center">
+                            내가 입력한 프롬프트 (User)
+                        </div>
+                        <div class="bg-neutral-50 p-6 flex-grow font-mono text-sm whitespace-pre-wrap text-neutral-700 leading-relaxed" id="sim-prompt-text">
+AI에 대한 이해와 프롬프팅 기법에 대해 설명해줘.
+                        </div>
+                    </div>
+
+                    <!-- AI Response Box -->
+                    <div class="flex flex-col h-full shadow-sm rounded-xl overflow-hidden border border-neutral-200">
+                        <div class="bg-neutral-500 text-white p-4 font-bold text-center transition-colors duration-300" id="ai-header">
+                            AI의 답변 (Assistant)
+                        </div>
+                        <div class="bg-white p-6 flex-grow text-neutral-700 leading-relaxed" id="sim-response-text">
+                            AI(인공지능)는 인간의 지능을 모방하는 컴퓨터 시스템입니다. 프롬프팅 기법은 AI에게 질문하는 방법을 의미합니다. 프롬프트를 잘 작성하면 AI가 더 나은 대답을 할 수 있습니다. 다양한 분야에서 활용되고 있습니다.
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-8 p-5 bg-neutral-100 border-l-4 border-neutral-400 rounded-r-xl text-base text-neutral-700 hidden fade-in" id="sim-analysis">
+                    <strong>분석:</strong> 구체적인 제약조건이 없기 때문에 원론적이고 뻔한 답변만 출력되었습니다. 실무에 바로 적용하기 어렵습니다.
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        // --- Tab Logic ---
+        function switchTab(tabId) {
+            // Hide all contents
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            
+            // Reset button styles
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.className = "tab-btn px-6 py-3 text-sm font-bold rounded-t-xl bg-primary-600 text-primary-100 hover:bg-primary-400 border-b-2 border-transparent transition-colors";
+            });
+
+            // Activate chosen tab
+            document.getElementById(tabId).classList.add('active');
+            
+            // Highlight chosen button
+            const activeBtn = document.getElementById('btn-' + tabId);
+            activeBtn.className = "tab-btn px-6 py-3 text-sm font-bold rounded-t-xl bg-white text-primary-600 border-b-2 border-white transition-colors";
+        }
+
+        // --- Chart.js Implementations ---
+        Chart.defaults.font.family = "'Noto Sans KR', sans-serif";
+        Chart.defaults.color = '#57534e'; // neutral-600
+
+        // 1. Radar Chart (Comparison)
+        const ctxRadar = document.getElementById('radarChart').getContext('2d');
+        new Chart(ctxRadar, {
+            type: 'radar',
+            data: {
+                labels: ['정확도', '구체성', '형식 준수', '논리성', '맥락 이해'],
+                datasets: [
+                    {
+                        label: '일반 프롬프트 (그냥 질문)',
+                        data: [40, 20, 30, 50, 40],
+                        backgroundColor: 'rgba(168, 162, 158, 0.2)', // neutral-400
+                        borderColor: '#a8a29e',
+                        pointBackgroundColor: '#a8a29e',
+                        borderWidth: 2
+                    },
+                    {
+                        label: '최적화 프롬프트 (역할/제약 추가)',
+                        data: [90, 95, 100, 85, 90],
+                        backgroundColor: 'rgba(249, 115, 22, 0.3)', // primary-500
+                        borderColor: '#f97316',
+                        pointBackgroundColor: '#f97316',
+                        borderWidth: 2
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    r: {
+                        angleLines: { color: 'rgba(0,0,0,0.05)' },
+                        grid: { color: 'rgba(0,0,0,0.05)' },
+                        pointLabels: { font: { size: 13, weight: 'bold' }, color: '#44403c' },
+                        ticks: { display: false, min: 0, max: 100 }
+                    }
+                },
+                plugins: {
+                    legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 8, font: {size: 12} } }
+                }
+            }
+        });
+
+        // 2. Doughnut Chart (Components)
+        const ctxDoughnut = document.getElementById('doughnutChart').getContext('2d');
+        new Chart(ctxDoughnut, {
+            type: 'doughnut',
+            data: {
+                labels: ['명확한 지시/목표 (Task)', '제약조건/형식 (Constraints)', '역할/페르소나 (Role)', '배경/맥락 정보 (Context)'],
+                datasets: [{
+                    data: [35, 30, 15, 20],
+                    backgroundColor: [
+                        '#ea580c', // primary-600
+                        '#f97316', // primary-500
+                        '#fb923c', // primary-400
+                        '#fed7aa'  // primary-200
+                    ],
+                    borderWidth: 2,
+                    borderColor: '#ffffff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '70%',
+                plugins: {
+                    legend: { position: 'right', labels: { boxWidth: 12, font: {size: 12} } },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) { return ` ${context.label}: 비중 ${context.raw}%`; }
+                        }
+                    }
+                }
+            }
+        });
+
+        // --- Fukatsu Interactive Panel Logic ---
+        const fukatsuData = {
+            command: {
+                title: '#명령문 (Command)',
+                desc: 'AI가 수행해야 할 핵심 목표와 역할을 부여하는 섹션입니다. AI에게 <strong>"너는 누구고, 무엇을 해야 한다"</strong>를 가장 먼저 각인시킵니다.',
+                example: '"당신은 10년 차 B2B 데이터 분석가입니다. 다음 첨부된 매출 데이터를 분석하여 핵심 원인을 도출하세요."'
+            },
+            constraint: {
+                title: '#제약조건 (Constraints)',
+                desc: 'AI의 환각(Hallucination)을 줄이고 원하는 형태를 강제하는 가장 중요한 블록입니다. 분량, 어조, 금지어, 출력 형식 등을 리스트 형태로 명확히 지정합니다.',
+                example: '- 조건 1: 반드시 표(Table) 형태로 출력할 것\n- 조건 2: 전문적인 비즈니스 용어 사용\n- 조건 3: 추측성 발언 절대 금지'
+            },
+            input: {
+                title: '#입력문 (Input)',
+                desc: '분석, 요약, 번역의 대상이 되는 원본 데이터를 제공하는 곳입니다. 명령문과 입력문을 분리하면 AI가 지시사항과 데이터를 혼동하지 않습니다.',
+                example: '[회의록 텍스트 삽입]\n또는 [엑셀 CSV 데이터 삽입]'
+            },
+            output: {
+                title: '#출력문 (Output / Format)',
+                desc: 'AI가 답변을 내놓을 때 사용할 "빈칸 채우기" 양식을 제공합니다. 이 형식을 제공하면 후처리(엑셀 복사, PPT 붙여넣기)가 압도적으로 쉬워집니다.',
+                example: '1. 핵심 문제 정의:\n2. 해결 방안 (3가지):\n3. 예상 기대 효과:'
+            }
+        };
+
+        function showFukatsuDetail(key, el) {
+            // Update Active State on list
+            document.querySelectorAll('.fukatsu-block').forEach(block => block.classList.remove('active', 'bg-neutral-700'));
+            document.querySelectorAll('.fukatsu-block').forEach(block => block.classList.add('bg-neutral-700'));
+            
+            el.classList.remove('bg-neutral-700');
+            el.classList.add('active');
+
+            // Update Panel Content
+            const data = fukatsuData[key];
+            const panel = document.getElementById('fukatsu-detail-panel');
+            
+            panel.classList.remove('fade-in');
+            void panel.offsetWidth; // trigger reflow
+            panel.classList.add('fade-in');
+
+            panel.innerHTML = `
+                <h3 class="text-2xl font-bold text-primary-700 mb-4">${data.title}</h3>
+                <p class="text-neutral-700 leading-relaxed mb-6 text-lg">${data.desc}</p>
+                <div class="bg-white p-5 rounded-xl border border-primary-200 shadow-sm">
+                    <span class="text-xs font-bold text-primary-500 uppercase tracking-wider block mb-2">실무 적용 예시</span>
+                    <span class="text-neutral-800 font-medium whitespace-pre-wrap">${data.example}</span>
+                </div>
+            `;
+        }
+
+        // --- Role & Constraint Simulator Logic ---
+        const toggle = document.getElementById('prompt-toggle');
+        const promptText = document.getElementById('sim-prompt-text');
+        const responseText = document.getElementById('sim-response-text');
+        const analysisBox = document.getElementById('sim-analysis');
+        const aiHeader = document.getElementById('ai-header');
+        
+        const contentBad = {
+            prompt: "AI에 대한 이해와 프롬프팅 기법에 대해 설명해줘.",
+            response: "AI(인공지능)는 인간의 지능을 모방하는 컴퓨터 시스템입니다. 프롬프팅 기법은 AI에게 질문하는 방법을 의미합니다. 프롬프트를 잘 작성하면 AI가 더 나은 대답을 할 수 있습니다. 다양한 분야에서 활용되고 있습니다.",
+            analysis: "<strong>분석:</strong> 구체적인 제약조건이 없기 때문에 원론적이고 뻔한 답변만 출력되었습니다. 실무에 바로 적용하기 어렵습니다.",
+            headerColor: "bg-neutral-500"
+        };
+
+        const contentGood = {
+            prompt: `#명령문
+당신은 사내 교육을 담당하는 시니어 강사입니다. 
+아래 제약조건을 준수하여 '프롬프팅 기법' 교육 자료 요약본을 작성하세요.
+
+#제약조건
+- 대상: 비개발 직군 신입사원
+- 분량: 핵심만 3가지 불릿 포인트로 요약
+- 어조: 친절하고 격식 있는 비즈니스 존댓말
+
+#출력형식
+■ 교육 주제: [주제명]
+1. [소제목]: [설명]
+...`,
+            response: `■ 교육 주제: 신입사원을 위한 실전 프롬프팅 기법
+
+1. 프롬프트는 명확한 업무 지시서입니다: 
+AI는 뛰어난 어시스턴트입니다. 두루뭉술한 질문보다는 배경, 목적, 역할을 구체적으로 명시할수록 원하는 결과물을 빠르고 정확하게 얻을 수 있습니다.
+
+2. 후카츠 프롬프트 프레임워크 활용: 
+명령, 제약조건, 입력, 출력 형태를 특수기호(#)로 구분하여 지시하는 기법입니다. 이 템플릿을 사용하면 AI가 지시사항을 혼동하지 않고 요구한 포맷에 맞게 답변을 생성합니다.
+
+3. 제약조건이 품질을 결정합니다: 
+원하는 글자 수, 어조, 출력 양식 등을 구체적인 '제약조건'으로 걸어주시면 실무에 즉시 복사하여 사용할 수 있는 완벽한 결과물을 얻으실 수 있습니다.`,
+            analysis: "<strong>분석 (최적화 완료):</strong> '시니어 강사'라는 역할과 대상(신입사원), 포맷(3가지 불릿)이라는 제약조건이 부여되자, 즉시 실무 교육 자료로 쓸 수 있는 구조화된 답변이 생성되었습니다.",
+            headerColor: "bg-primary-500" 
+        };
+
+        toggle.addEventListener('change', function() {
+            // Trigger animation
+            responseText.classList.remove('fade-in');
+            promptText.classList.remove('fade-in');
+            void responseText.offsetWidth; 
+            
+            if (this.checked) {
+                // Good Prompt
+                promptText.textContent = contentGood.prompt;
+                responseText.innerHTML = contentGood.response.replace(/\n/g, '<br>');
+                analysisBox.innerHTML = contentGood.analysis;
+                
+                // Change analysis box to bright orange style
+                analysisBox.className = "mt-8 p-5 bg-primary-50 border-l-4 border-primary-500 rounded-r-xl text-base text-primary-900 block fade-in";
+                
+                // Change AI header to bright orange
+                aiHeader.className = "bg-primary-500 text-white p-4 font-bold text-center transition-colors duration-300";
+            } else {
+                // Bad Prompt
+                promptText.textContent = contentBad.prompt;
+                responseText.innerHTML = contentBad.response;
+                analysisBox.innerHTML = contentBad.analysis;
+                
+                // Change analysis box to neutral style
+                analysisBox.className = "mt-8 p-5 bg-neutral-100 border-l-4 border-neutral-400 rounded-r-xl text-base text-neutral-700 block fade-in";
+                
+                // Change AI header back to neutral
+                aiHeader.className = "bg-neutral-500 text-white p-4 font-bold text-center transition-colors duration-300";
+            }
+            
+            responseText.classList.add('fade-in');
+            promptText.classList.add('fade-in');
+        });
+
+        // Init initial state for toggle analysis
+        analysisBox.classList.remove('hidden');
+
+    </script>
+</body>
+</html>
