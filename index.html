@@ -37,7 +37,7 @@
                             800: '#9a3412',
                             900: '#7c2d12',
                         },
-                        neutral: { // 따뜻한 느낌의 웜그레이 톤 (기존 차가운 slate 대체)
+                        neutral: { // 따뜻한 느낌의 웜그레이 톤
                             50: '#fafaf9',
                             100: '#f5f5f4',
                             200: '#e7e5e4',
@@ -128,25 +128,6 @@
 </head>
 <body class="bg-primary-50 text-neutral-800 font-sans antialiased min-h-screen">
 
-    <!-- Chosen Palette: Bright Orange (primary) with Warm Grey (neutral) to create a cheerful, energetic, yet professional atmosphere. -->
-    
-    <!-- Application Structure Plan: 
-         - Layout: Top Navigation Tabs + Dynamic Content Area.
-         - Flow: 
-           1. Core AI (Charts showing the difference good prompting makes).
-           2. Fukatsu Framework (Interactive block explorer to learn the structure).
-           3. Roles & Constraints (Interactive toggle simulator showing Before/After text).
-         - Update: Removed all emojis/icons for a cleaner, typography-driven look. Changed color scheme to vibrant orange.
-    -->
-
-    <!-- Visualization & Content Choices:
-         - Goal 1 (Compare Quality): Radar Chart (Chart.js). Updated colors to orange vs warm-grey.
-         - Goal 2 (Structure Breakdown): Doughnut Chart (Chart.js). Updated colors to an orange gradient.
-         - Goal 3 (Learn Framework): Interactive HTML CSS Grid. 
-         - Goal 4 (Demonstrate Impact): Interactive Toggle & Text Swap (Vanilla JS).
-         - CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. NO emojis used.
-    -->
-
     <!-- Header -->
     <header class="bg-primary-500 text-white shadow-md">
         <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -175,6 +156,29 @@
         
         <!-- TAB 1: AI & 프롬프트 이해 -->
         <section id="tab-intro" class="tab-content active">
+            
+            <!-- 강사 소개 프로필 섹션 추가 -->
+            <div class="bg-white rounded-2xl shadow-sm border-l-8 border-primary-500 p-6 md:p-8 mb-8 flex flex-col md:flex-row gap-6 items-start md:items-center">
+                <div class="flex-grow space-y-4 w-full">
+                    <div class="border-b border-neutral-100 pb-4">
+                        <span class="inline-block px-3 py-1 bg-primary-50 text-primary-600 font-bold text-xs tracking-wider rounded-full mb-2">INSTRUCTOR</span>
+                        <h2 class="text-2xl font-bold text-neutral-900"><span class="text-primary-500 mr-2">김가경</span>강사</h2>
+                        <p class="text-neutral-500 font-medium mt-1">웹(Web) 학과</p>
+                    </div>
+                    <div class="space-y-3 pt-2 text-sm md:text-base">
+                        <div class="flex flex-col md:flex-row md:items-start gap-1 md:gap-4">
+                            <span class="text-primary-600 font-bold min-w-[100px] shrink-0">진행 수업</span>
+                            <span class="text-neutral-700 font-medium">컴활 / 모스 등 OA 수업, 웹 디자인 및 퍼블리싱 전반적인 분야</span>
+                        </div>
+                        <div class="flex flex-col md:flex-row md:items-start gap-1 md:gap-4">
+                            <span class="text-primary-600 font-bold min-w-[100px] shrink-0">AI 활용 방향</span>
+                            <span class="text-neutral-700 font-medium">기획안 작성, 서비스 기획 및 설계, 이미지 제작 등에 실무적으로 적극 활용 중</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 기존 본문 영역 -->
             <div class="bg-white rounded-2xl shadow-sm border border-neutral-200 p-6 md:p-10 mb-8">
                 <h2 class="text-2xl font-bold text-neutral-900 mb-4">왜 프롬프팅(Prompting)이 중요한가?</h2>
                 <p class="text-neutral-600 leading-relaxed text-lg mb-8">
